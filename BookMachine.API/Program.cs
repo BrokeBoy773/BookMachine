@@ -18,6 +18,12 @@ builder.Services.AddTransient<IBookService, BookService>();
 builder.Services.AddTransient<IAuthorRepository, AuthorRepository>();
 builder.Services.AddTransient<IAuthorService, AuthorService>();
 
+builder.Services.AddControllersWithViews()
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+    });
+
 builder.Services.AddDbContext<BookMachineDbContext>(
     options =>
     {

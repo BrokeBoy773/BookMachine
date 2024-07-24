@@ -13,22 +13,58 @@ namespace BookMachine.Persistence.Repositories
         {
             List<AuthorEntity> authorEntities = await _context.AuthorEntities
                 .AsNoTracking()
+                .Include(a => a.Books)
                 .ToListAsync();
 
-            List<Author> authors = authorEntities
-                .Select(a => Author.Create(a.AuthorId, a.Name).Author)
-                .ToList();
+            List<Author> authors = [];
 
+            foreach (var authorEntity in authorEntities)
+            {
+                if (authorEntity.Books.Count != 0)
+                {
+                    List<Book> books = [];
+                    Author author = Author.Create(authorEntity.AuthorId, authorEntity.Name, books).Author;
+
+                    foreach (var bookEntity in authorEntity.Books)
+                    {
+                        books.Add(Book.Create(bookEntity.BookId, bookEntity.Title, bookEntity.AuthorId, author).Book);
+                    }
+
+                    authors.Add(author);
+                }
+                else
+                {
+                    Author author = Author.Create(authorEntity.AuthorId, authorEntity.Name, []).Author;
+                    authors.Add(author);
+                }
+            }
+            
             return authors;
         }
         public async Task<Author?> GetAuthorByIdAsync(Guid authorId)
         {
             AuthorEntity? authorEntity = await _context.AuthorEntities
-                .Where(a => a.AuthorId == authorId)
                 .AsNoTracking()
+                .Where(a => a.AuthorId == authorId)
+                .Include(a => a.Books)
                 .FirstOrDefaultAsync();
 
-            Author? author = Author.Create(authorEntity!.AuthorId, authorEntity.Name).Author;
+            Author? author = null;
+
+            if (authorEntity!.Books.Count != 0)
+            {
+                List<Book> books = [];
+                author = Author.Create(authorEntity.AuthorId, authorEntity.Name, books).Author;
+
+                foreach (var bookEntity in authorEntity!.Books)
+                {
+                    books.Add(Book.Create(bookEntity.BookId, bookEntity.Title, bookEntity.AuthorId, author).Book);
+                }
+            }
+            else
+            {
+                author = Author.Create(authorEntity.AuthorId, authorEntity.Name, []).Author;
+            }
 
             return author;
         }

@@ -13,12 +13,21 @@ namespace BookMachine.Persistence.Repositories
         {
             List<BookEntity> bookEntities = await _context.BookEntities
                 .AsNoTracking()
+                .Include(b => b.Author)
                 .ToListAsync();
 
-            List<Book> books = bookEntities
-                .Select(b => Book.Create(b.BookId, b.Title).Book)
-                .ToList();
+            List<Book> books = [];
 
+            foreach (BookEntity bookEntity in bookEntities)
+            {
+                Author author = Author.Create(bookEntity.AuthorId, bookEntity!.Author!.Name, []).Author;
+
+                foreach (var bookEnt in bookEntity!.Author!.Books)
+                {
+                    books.Add(Book.Create(bookEnt.BookId, bookEnt.Title, bookEnt.AuthorId, author).Book);
+                }
+            }
+            
             return books;
         }
         public async Task<Book?> GetBookByIdAsync(Guid bookId)
@@ -26,9 +35,26 @@ namespace BookMachine.Persistence.Repositories
             BookEntity? bookEntity = await _context.BookEntities
                 .AsNoTracking()
                 .Where(b => b.BookId == bookId)
+                .Include(b => b.Author)
                 .FirstOrDefaultAsync();
-            
-            Book? book = Book.Create(bookEntity!.BookId, bookEntity.Title).Book;
+
+            List<BookEntity> bookEntities = await _context.BookEntities
+                .AsNoTracking()
+                .Where(b => b.AuthorId == bookEntity!.AuthorId)
+                .Include(b => b.Author)
+                .ToListAsync();
+
+            Author? author = null;
+
+            List<Book> books = [];
+            author = Author.Create(bookEntity!.AuthorId, bookEntity!.Author!.Name, books).Author;
+
+            foreach (var bookEnt in bookEntities)
+            {
+                books.Add(Book.Create(bookEnt.BookId, bookEnt.Title, bookEnt.AuthorId, author).Book);
+            }
+
+            Book? book = Book.Create(bookEntity.BookId, bookEntity.Title, bookEntity.AuthorId, author).Book;
 
             return book;
         }
@@ -39,6 +65,8 @@ namespace BookMachine.Persistence.Repositories
             {
                 BookId = book.BookId,
                 Title = book.Title,
+
+                AuthorId = book.AuthorId
             };
 
             await _context.BookEntities.AddAsync(bookEntity);

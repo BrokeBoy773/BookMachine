@@ -18,7 +18,7 @@ namespace BookMachine.API.Controllers
             List<Author> authors = await _authorService.GetAllAuthorsAsync();
 
             List<AuthorResponse> response = authors
-                .Select(a => new AuthorResponse(a.AuthorId, a.Name))
+                .Select(a => new AuthorResponse(a.AuthorId, a.Name, a.Books))
                 .ToList();
 
             return Ok(response);
@@ -33,7 +33,7 @@ namespace BookMachine.API.Controllers
                 return BadRequest();
             }
 
-            AuthorResponse response = new(author!.AuthorId, author.Name);
+            AuthorResponse response = new(author!.AuthorId, author.Name, author.Books);
 
             return Ok(response);
         }
@@ -41,7 +41,7 @@ namespace BookMachine.API.Controllers
         [HttpPost]
         public async Task<ActionResult<Guid>> CreateAuthorAsync([FromBody] AuthorRequest request)
         {
-            (Author Author, List<string> Errors) author = Author.Create(Guid.NewGuid(), request.Name);
+            (Author Author, List<string> Errors) author = Author.Create(Guid.NewGuid(), request.AuthorName, []);
 
             if (author.Errors.Count != 0)
             {
@@ -56,7 +56,7 @@ namespace BookMachine.API.Controllers
         [HttpPut("{authorId:guid}")]
         public async Task<ActionResult<Guid>> UpdateAuthorAsync(Guid authorId, [FromBody] AuthorRequest request)
         {
-            (Author Author, List<string> Errors) author = Author.Create(authorId, request.Name);
+            (Author Author, List<string> Errors) author = Author.Create(authorId, request.AuthorName, []);
 
             if (author.Errors.Count != 0)
             {

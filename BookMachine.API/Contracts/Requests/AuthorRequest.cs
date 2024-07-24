@@ -1,4 +1,4 @@
 ﻿namespace BookMachine.API.Contracts.Requests
 {
-    public record AuthorRequest(string Name);
+    public record AuthorRequest(string AuthorName);
 }

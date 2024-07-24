@@ -8,22 +8,26 @@ namespace BookMachine.Core.Models
 
         public Guid BookId { get; }
         public string Title { get; } = string.Empty;
-        public Guid AuthorId { get; set; }
-        public Author? Author { get; set; }
 
-        private Book(Guid bookId, string title)
+        public Guid AuthorId { get; }
+        public Author? Author { get; }
+
+        private Book(Guid bookId, string title, Guid authorId, Author? author)
         {
             BookId = bookId;
             Title = title;
+
+            AuthorId = authorId;
+            Author = author;
         }
 
-        public static (Book Book, List<string> Errors) Create(Guid bookId, string title)
+        public static (Book Book, List<string> Errors) Create(Guid bookId, string title, Guid authorId, Author? author)
         {
             List<string> errors = [];
 
             BookValidation.TitleValidation(title, errors);
 
-            Book book = new(bookId, title);
+            Book book = new(bookId, title, authorId, author);
 
             return (book, errors);
         }
