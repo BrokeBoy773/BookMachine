@@ -1,7 +1,9 @@
 ﻿using BookMachine.Core.Interfaces.Persistence.Repositories;
 using BookMachine.Core.Models;
 using BookMachine.Persistence.Entities;
+using BookMachine.Persistence.Mappings;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace BookMachine.Persistence.Repositories
 {
@@ -15,21 +17,10 @@ namespace BookMachine.Persistence.Repositories
                 .AsNoTracking()
                 .Include(b => b.Author)
                 .ToListAsync();
-
-            List<Book> books = [];
-
-            foreach (BookEntity bookEntity in bookEntities)
-            {
-                Author author = Author.Create(bookEntity.AuthorId, bookEntity!.Author!.Name, []).Author;
-
-                foreach (var bookEnt in bookEntity!.Author!.Books)
-                {
-                    books.Add(Book.Create(bookEnt.BookId, bookEnt.Title, bookEnt.AuthorId, author).Book);
-                }
-            }
             
-            return books;
+            return BookMapping.FromBookEntityListToBookList(bookEntities);
         }
+
         public async Task<Book?> GetBookByIdAsync(Guid bookId)
         {
             BookEntity? bookEntity = await _context.BookEntities
@@ -44,30 +35,54 @@ namespace BookMachine.Persistence.Repositories
                 .Include(b => b.Author)
                 .ToListAsync();
 
-            Author? author = null;
+            return BookMapping.FromBookEntityToBook(bookEntities, bookEntity!);
+        }
 
-            List<Book> books = [];
-            author = Author.Create(bookEntity!.AuthorId, bookEntity!.Author!.Name, books).Author;
+        public async Task<List<Book>> GetBookByFilterAsync(string? search, string? sortItem, string? sortOrder)
+        {
+            IQueryable<BookEntity> bookEntityQuery = _context.BookEntities
+                .AsNoTracking()
+                .Where(b => string.IsNullOrWhiteSpace(search) || b.Title.ToLower().Contains(search.ToLower()))
+                .Include(b => b.Author);
 
-            foreach (var bookEnt in bookEntities)
+            Expression<Func<BookEntity, object>> selectorKey;
+
+            switch (sortItem)
             {
-                books.Add(Book.Create(bookEnt.BookId, bookEnt.Title, bookEnt.AuthorId, author).Book);
+                case "title":
+                    selectorKey = bookEntity => bookEntity.Title;
+                    break;
+
+                case "id":
+                    selectorKey = bookEntity => bookEntity.AuthorId;
+                    break;
+
+                default:
+                    goto case "id";
             }
 
-            Book? book = Book.Create(bookEntity.BookId, bookEntity.Title, bookEntity.AuthorId, author).Book;
+            switch (sortOrder)
+            {
+                case "desc":
+                    bookEntityQuery = bookEntityQuery.OrderByDescending(selectorKey);
+                    break;
 
-            return book;
+                case "asc":
+                    bookEntityQuery = bookEntityQuery.OrderBy(selectorKey);
+                    break;
+
+                default:
+                    goto case "asc";
+            }
+
+            List<BookEntity> bookEntities = await bookEntityQuery.ToListAsync();
+
+            return BookMapping.FromBookEntityListToBookList(bookEntities);
         }
 
         public async Task<Guid> CreateBookAsync(Book book)
         {
-            BookEntity bookEntity = new()
-            {
-                BookId = book.BookId,
-                Title = book.Title,
-
-                AuthorId = book.AuthorId
-            };
+            BookEntity bookEntity = BookMapping.FromBookToBookEntity(book);
 
             await _context.BookEntities.AddAsync(bookEntity);
             await _context.SaveChangesAsync();

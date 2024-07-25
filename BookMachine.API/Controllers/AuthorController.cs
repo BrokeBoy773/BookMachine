@@ -1,5 +1,5 @@
-﻿using BookMachine.API.Contracts.Requests;
-using BookMachine.API.Contracts.Responses;
+﻿using BookMachine.API.Contracts.Requests.AuthorRequests;
+using BookMachine.API.Contracts.Responses.AuthorResponses;
 using BookMachine.Core.Interfaces.Application.Services;
 using BookMachine.Core.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -12,34 +12,47 @@ namespace BookMachine.API.Controllers
     {
         private readonly IAuthorService _authorService = authorService;
 
-        [HttpGet]
-        public async Task<ActionResult<List<AuthorResponse>>> GetAllAuthorsAsync()
+        [HttpGet(Name = "GetAllAuthors")]
+        public async Task<ActionResult<List<GetAllAuthorsResponse>>> GetAllAuthorsAsync()
         {
             List<Author> authors = await _authorService.GetAllAuthorsAsync();
 
-            List<AuthorResponse> response = authors
-                .Select(a => new AuthorResponse(a.AuthorId, a.Name, a.Books))
+            List<GetAllAuthorsResponse> response = authors
+                .Select(a => new GetAllAuthorsResponse(a.AuthorId, a.Name, a.Books))
                 .ToList();
 
             return Ok(response);
         }
-        [HttpGet("{authorId:guid}")]
-        public async Task<ActionResult<AuthorResponse?>> GetAuthorByIdAsync(Guid authorId)
+
+        [HttpGet("Filter", Name = "GetAuthorByFilter")]
+        public async Task<ActionResult<GetAuthorByFilterResponse>> GetAuthorByFilterAsync(GetAuthorByFilterRequest request)
         {
-            Author? author = await _authorService.GetAuthorByIdAsync(authorId);
+            List<Author> authors = await _authorService.GetAuthorByFilterAsync(request.Search, request.SortItem, request.SortOrder);
+
+            List<GetAuthorByFilterResponse> response = authors
+                .Select(a => new GetAuthorByFilterResponse(a.AuthorId, a.Name, a.Books))
+                .ToList();
+
+            return Ok(response);
+        }
+
+        [HttpGet("{id:guid}", Name = "GetAuthorById")]
+        public async Task<ActionResult<GetAllAuthorsResponse?>> GetAuthorByIdAsync(Guid id)
+        {
+            Author? author = await _authorService.GetAuthorByIdAsync(id);
 
             if (author == null)
             {
                 return BadRequest();
             }
 
-            AuthorResponse response = new(author!.AuthorId, author.Name, author.Books);
+            GetAuthorByIdResponse response = new(author!.AuthorId, author.Name, author.Books);
 
             return Ok(response);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<Guid>> CreateAuthorAsync([FromBody] AuthorRequest request)
+        [HttpPost(Name = "CreateAuthor")]
+        public async Task<ActionResult<Guid>> CreateAuthorAsync([FromBody] CreateAuthorRequest request)
         {
             (Author Author, List<string> Errors) author = Author.Create(Guid.NewGuid(), request.AuthorName, []);
 
@@ -53,27 +66,27 @@ namespace BookMachine.API.Controllers
             return Ok(authorId);
         }
 
-        [HttpPut("{authorId:guid}")]
-        public async Task<ActionResult<Guid>> UpdateAuthorAsync(Guid authorId, [FromBody] AuthorRequest request)
+        [HttpPut("{id:guid}", Name = "UpdateAuthor")]
+        public async Task<ActionResult<Guid>> UpdateAuthorAsync(Guid id, [FromBody] UpdateAuthorRequest request)
         {
-            (Author Author, List<string> Errors) author = Author.Create(authorId, request.AuthorName, []);
+            (Author Author, List<string> Errors) author = Author.Create(id, request.AuthorName, []);
 
             if (author.Errors.Count != 0)
             {
                 return BadRequest(author.Errors);
             }
 
-            await _authorService.UpdateAuthorAsync(authorId, author.Author);
+            await _authorService.UpdateAuthorAsync(id, author.Author);
 
-            return Ok(authorId);
+            return Ok(id);
         }
 
-        [HttpDelete("{authorId:guid}")]
-        public async Task<ActionResult<Guid>> DeleteAuthorAsync(Guid authorId)
+        [HttpDelete("{id:guid}", Name = "DeleteAuthor")]
+        public async Task<ActionResult<Guid>> DeleteAuthorAsync(Guid id)
         {
-            await _authorService.DeleteAuthorAsync(authorId);
+            await _authorService.DeleteAuthorAsync(id);
 
-            return Ok(authorId);
+            return Ok(id);
         }
 
     }

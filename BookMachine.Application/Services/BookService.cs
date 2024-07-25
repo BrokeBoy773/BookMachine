@@ -12,6 +12,12 @@ namespace BookMachine.Application.Services
         {
             return await _bookRepository.GetAllBooksAsync();
         }
+
+        public async Task<List<Book>> GetBookByFilterAsync(string? search, string? sortItem, string? sortOrder)
+        {
+            return await _bookRepository.GetBookByFilterAsync(search, sortItem, sortOrder);
+        }
+
         public async Task<Book?> GetBookByIdAsync(Guid bookId)
         {
             return await _bookRepository.GetBookByIdAsync(bookId);

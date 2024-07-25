@@ -5,6 +5,9 @@ namespace BookMachine.Core.Interfaces.Persistence.Repositories
     public interface IAuthorRepository
     {
         public Task<List<Author>> GetAllAuthorsAsync();
+
+        public Task<List<Author>> GetAuthorByFilterAsync(string? search, string? sortItem, string? sortOrder);
+
         public Task<Author?> GetAuthorByIdAsync(Guid authorId);
 
         public Task<Guid> CreateAuthorAsync(Author author);

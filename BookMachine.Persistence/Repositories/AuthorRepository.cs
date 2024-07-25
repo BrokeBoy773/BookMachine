@@ -1,7 +1,9 @@
 ﻿using BookMachine.Core.Interfaces.Persistence.Repositories;
 using BookMachine.Core.Models;
 using BookMachine.Persistence.Entities;
+using BookMachine.Persistence.Mappings;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace BookMachine.Persistence.Repositories
 {
@@ -16,31 +18,52 @@ namespace BookMachine.Persistence.Repositories
                 .Include(a => a.Books)
                 .ToListAsync();
 
-            List<Author> authors = [];
-
-            foreach (var authorEntity in authorEntities)
-            {
-                if (authorEntity.Books.Count != 0)
-                {
-                    List<Book> books = [];
-                    Author author = Author.Create(authorEntity.AuthorId, authorEntity.Name, books).Author;
-
-                    foreach (var bookEntity in authorEntity.Books)
-                    {
-                        books.Add(Book.Create(bookEntity.BookId, bookEntity.Title, bookEntity.AuthorId, author).Book);
-                    }
-
-                    authors.Add(author);
-                }
-                else
-                {
-                    Author author = Author.Create(authorEntity.AuthorId, authorEntity.Name, []).Author;
-                    authors.Add(author);
-                }
-            }
-            
-            return authors;
+            return AuthorMapping.FromAuthorEntityListToAuthorList(authorEntities);
         }
+
+        public async Task<List<Author>> GetAuthorByFilterAsync(string? search, string? sortItem, string? sortOrder)
+        {
+            IQueryable<AuthorEntity> authorEntityQuery = _context.AuthorEntities
+                .AsNoTracking()
+                .Where(a => string.IsNullOrWhiteSpace(search) || a.Name.ToLower().Contains(search.ToLower()))
+                .Include(a => a.Books);
+
+            Expression<Func<AuthorEntity, object>> selectorKey;
+
+            switch (sortItem)
+            {
+                case "name":
+                    selectorKey = authorEntity => authorEntity.Name;
+                    break;
+
+                case "id":
+                    selectorKey = authorEntity => authorEntity.AuthorId;
+                    break;
+
+                default:
+                    goto case "id";
+            }
+
+            switch (sortOrder)
+            {
+                case "desc":
+                    authorEntityQuery = authorEntityQuery.OrderByDescending(selectorKey);
+                    break;
+
+                case "asc":
+                    authorEntityQuery = authorEntityQuery.OrderBy(selectorKey);
+                    break;
+
+                default:
+                    goto case "asc";
+            }
+
+            List<AuthorEntity> authorEntities = await authorEntityQuery.ToListAsync();
+
+            return AuthorMapping.FromAuthorEntityListToAuthorList(authorEntities);
+
+        }
+
         public async Task<Author?> GetAuthorByIdAsync(Guid authorId)
         {
             AuthorEntity? authorEntity = await _context.AuthorEntities
@@ -49,33 +72,12 @@ namespace BookMachine.Persistence.Repositories
                 .Include(a => a.Books)
                 .FirstOrDefaultAsync();
 
-            Author? author = null;
-
-            if (authorEntity!.Books.Count != 0)
-            {
-                List<Book> books = [];
-                author = Author.Create(authorEntity.AuthorId, authorEntity.Name, books).Author;
-
-                foreach (var bookEntity in authorEntity!.Books)
-                {
-                    books.Add(Book.Create(bookEntity.BookId, bookEntity.Title, bookEntity.AuthorId, author).Book);
-                }
-            }
-            else
-            {
-                author = Author.Create(authorEntity.AuthorId, authorEntity.Name, []).Author;
-            }
-
-            return author;
+            return AuthorMapping.FromAuthorEntityToAuthor(authorEntity!);
         }
 
         public async Task<Guid> CreateAuthorAsync(Author author)
         {
-            AuthorEntity authorEntity = new()
-            {
-                AuthorId = author.AuthorId,
-                Name = author.Name,
-            };
+            AuthorEntity authorEntity = AuthorMapping.FromAuthorToAuthorEntity(author);
 
             await _context.AddAsync(authorEntity);
             await _context.SaveChangesAsync();

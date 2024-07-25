@@ -1,5 +1,5 @@
-﻿using BookMachine.API.Contracts.Requests;
-using BookMachine.API.Contracts.Responses;
+﻿using BookMachine.API.Contracts.Requests.BookRequests;
+using BookMachine.API.Contracts.Responses.BookResponses;
 using BookMachine.Core.Interfaces.Application.Services;
 using BookMachine.Core.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -12,34 +12,47 @@ namespace BookMachine.API.Controllers
     {
         private readonly IBookService _bookService = bookService;
 
-        [HttpGet]
-        public async Task<ActionResult<List<BookResponse>>> GetAllBooksAsync()
+        [HttpGet(Name = "GetAllBooks")]
+        public async Task<ActionResult<List<GetAllBooksResponse>>> GetAllBooksAsync()
         {
             List<Book> books = await _bookService.GetAllBooksAsync();
 
-            List<BookResponse> response = books
-                .Select(b => new BookResponse(b.BookId, b.Title, b.Author!))
+            List<GetAllBooksResponse> response = books
+                .Select(b => new GetAllBooksResponse(b.BookId, b.Title, b.AuthorId, b.Author!.Name))
                 .ToList();
 
             return Ok(response);
         }
-        [HttpGet("{bookId:guid}")]
-        public async Task<ActionResult<BookResponse?>> GetBookByIdAsync(Guid bookId)
+
+        [HttpGet("Filter", Name = "GetBookByFilter")]
+        public async Task<ActionResult<GetBookByFilterResponse>> GetBookByFilterAsync(GetBookByFilterRequest request)
         {
-            Book? book = await _bookService.GetBookByIdAsync(bookId);
+            List<Book> books = await _bookService.GetBookByFilterAsync(request.Search, request.SortItem, request.SortOrder);
+
+            List<GetBookByFilterResponse> response = books
+                .Select(b => new GetBookByFilterResponse(b.BookId, b.Title, b.AuthorId, b.Author!.Name))
+                .ToList();
+
+            return Ok(response);
+        }
+
+        [HttpGet("{id:guid}", Name = "GetBookById")]
+        public async Task<ActionResult<GetBookByIdResponse?>> GetBookByIdAsync(Guid id)
+        {
+            Book? book = await _bookService.GetBookByIdAsync(id);
 
             if (book == null)
             {
                 return BadRequest();
             }
 
-            BookResponse response = new(book!.BookId, book.Title, book.Author!);
+            GetBookByIdResponse response = new(book!.BookId, book.Title, book.Author!);
 
             return Ok(response);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<Guid>> CreateBookAsync([FromBody] BookRequest request)
+        [HttpPost(Name = "CreateBook")]
+        public async Task<ActionResult<Guid>> CreateBookAsync([FromBody] CreateBookRequest request)
         {
             (Book Book, List<string> Errors) book = Book.Create(Guid.NewGuid(), request.BookTitle, request.AuthorId, null);
 
@@ -53,27 +66,27 @@ namespace BookMachine.API.Controllers
             return Ok(bookId);
         }
 
-        [HttpPut("{bookId:guid}")]
-        public async Task<ActionResult<Guid>> UpdateBookAsync(Guid bookId, [FromBody] BookRequest request)
+        [HttpPut("{id:guid}", Name = "UpdateBook")]
+        public async Task<ActionResult<Guid>> UpdateBookAsync(Guid id, [FromBody] UpdateBookRequest request)
         {
-            (Book Book, List<string> Errors) book = Book.Create(bookId, request.BookTitle, request.AuthorId, null);
+            (Book Book, List<string> Errors) book = Book.Create(id, request.BookTitle, request.AuthorId, null);
 
             if (book.Errors.Count != 0)
             {
                 return BadRequest(book.Errors);
             }
 
-            await _bookService.UpdateBookAsync(bookId, book.Book);
+            await _bookService.UpdateBookAsync(id, book.Book);
 
-            return Ok(bookId);
+            return Ok(id);
         }
 
-        [HttpDelete("{bookId:guid}")]
-        public async Task<ActionResult<Guid>> DeleteBookAsync(Guid bookId)
+        [HttpDelete("{id:guid}", Name = "DeleteBook")]
+        public async Task<ActionResult<Guid>> DeleteBookAsync(Guid id)
         {
-            await _bookService.DeleteBookAsync(bookId);
+            await _bookService.DeleteBookAsync(id);
 
-            return Ok(bookId);
+            return Ok(id);
         }
     }
 }

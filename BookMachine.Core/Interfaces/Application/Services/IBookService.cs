@@ -5,6 +5,9 @@ namespace BookMachine.Core.Interfaces.Application.Services
     public interface IBookService
     {
         public Task<List<Book>> GetAllBooksAsync();
+
+        public Task<List<Book>> GetBookByFilterAsync(string? search, string? sortItem, string? sortOrder);
+
         public Task<Book?> GetBookByIdAsync(Guid bookId);
 
         public Task<Guid> CreateBookAsync(Book book);
