@@ -3,13 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookMachine.API", "BookMachine.API\BookMachine.API.csproj", "{FD97BEC7-B386-4DD8-8069-0902A8BCFDFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookMachine.API", "BookMachine.API\BookMachine.API.csproj", "{FD97BEC7-B386-4DD8-8069-0902A8BCFDFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookMachine.Core", "BookMachine.Core\BookMachine.Core.csproj", "{9DD3DB14-70A6-457D-B99B-AF32C873EB31}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookMachine.Core", "BookMachine.Core\BookMachine.Core.csproj", "{9DD3DB14-70A6-457D-B99B-AF32C873EB31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookMachine.Persistence", "BookMachine.Persistence\BookMachine.Persistence.csproj", "{37AB7307-39A4-4811-BF08-1426E94421EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookMachine.Persistence", "BookMachine.Persistence\BookMachine.Persistence.csproj", "{37AB7307-39A4-4811-BF08-1426E94421EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookMachine.Application", "BookMachine.Application\BookMachine.Application.csproj", "{FAD78B0B-3E60-4BAA-9E8B-D96ED7946F59}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookMachine.Application", "BookMachine.Application\BookMachine.Application.csproj", "{FAD78B0B-3E60-4BAA-9E8B-D96ED7946F59}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookMachine.Infrastructure", "BookMachine.Infrastructure\BookMachine.Infrastructure.csproj", "{9D67C962-ED4F-4060-BB02-94E1DD1FD546}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{FAD78B0B-3E60-4BAA-9E8B-D96ED7946F59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAD78B0B-3E60-4BAA-9E8B-D96ED7946F59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAD78B0B-3E60-4BAA-9E8B-D96ED7946F59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D67C962-ED4F-4060-BB02-94E1DD1FD546}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D67C962-ED4F-4060-BB02-94E1DD1FD546}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D67C962-ED4F-4060-BB02-94E1DD1FD546}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D67C962-ED4F-4060-BB02-94E1DD1FD546}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

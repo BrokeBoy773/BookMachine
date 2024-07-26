@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BookMachine.Persistence\BookMachine.Persistence.csproj" />
+    <ProjectReference Include="..\BookMachine.Infrastructure\BookMachine.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

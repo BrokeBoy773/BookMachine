@@ -2,6 +2,7 @@
 using BookMachine.API.Contracts.Responses.AuthorResponses;
 using BookMachine.Core.Interfaces.Application.Services;
 using BookMachine.Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookMachine.API.Controllers
@@ -51,8 +52,9 @@ namespace BookMachine.API.Controllers
             return Ok(response);
         }
 
+        [Authorize]
         [HttpPost(Name = "CreateAuthor")]
-        public async Task<ActionResult<Guid>> CreateAuthorAsync([FromBody] CreateAuthorRequest request)
+        public async Task<ActionResult<Guid>> CreateAuthorAsync([FromBody]CreateAuthorRequest request)
         {
             (Author Author, List<string> Errors) author = Author.Create(Guid.NewGuid(), request.AuthorName, []);
 
@@ -66,8 +68,9 @@ namespace BookMachine.API.Controllers
             return Ok(authorId);
         }
 
+        [Authorize]
         [HttpPut("{id:guid}", Name = "UpdateAuthor")]
-        public async Task<ActionResult<Guid>> UpdateAuthorAsync(Guid id, [FromBody] UpdateAuthorRequest request)
+        public async Task<ActionResult<Guid>> UpdateAuthorAsync(Guid id, [FromBody]UpdateAuthorRequest request)
         {
             (Author Author, List<string> Errors) author = Author.Create(id, request.AuthorName, []);
 
@@ -81,6 +84,7 @@ namespace BookMachine.API.Controllers
             return Ok(id);
         }
 
+        [Authorize]
         [HttpDelete("{id:guid}", Name = "DeleteAuthor")]
         public async Task<ActionResult<Guid>> DeleteAuthorAsync(Guid id)
         {

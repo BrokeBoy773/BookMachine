@@ -2,6 +2,7 @@
 using BookMachine.API.Contracts.Responses.BookResponses;
 using BookMachine.Core.Interfaces.Application.Services;
 using BookMachine.Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookMachine.API.Controllers
@@ -51,8 +52,9 @@ namespace BookMachine.API.Controllers
             return Ok(response);
         }
 
+        [Authorize]
         [HttpPost(Name = "CreateBook")]
-        public async Task<ActionResult<Guid>> CreateBookAsync([FromBody] CreateBookRequest request)
+        public async Task<ActionResult<Guid>> CreateBookAsync([FromBody]CreateBookRequest request)
         {
             (Book Book, List<string> Errors) book = Book.Create(Guid.NewGuid(), request.BookTitle, request.AuthorId, null);
 
@@ -66,8 +68,9 @@ namespace BookMachine.API.Controllers
             return Ok(bookId);
         }
 
+        [Authorize]
         [HttpPut("{id:guid}", Name = "UpdateBook")]
-        public async Task<ActionResult<Guid>> UpdateBookAsync(Guid id, [FromBody] UpdateBookRequest request)
+        public async Task<ActionResult<Guid>> UpdateBookAsync(Guid id, [FromBody]UpdateBookRequest request)
         {
             (Book Book, List<string> Errors) book = Book.Create(id, request.BookTitle, request.AuthorId, null);
 
@@ -81,6 +84,7 @@ namespace BookMachine.API.Controllers
             return Ok(id);
         }
 
+        [Authorize]
         [HttpDelete("{id:guid}", Name = "DeleteBook")]
         public async Task<ActionResult<Guid>> DeleteBookAsync(Guid id)
         {

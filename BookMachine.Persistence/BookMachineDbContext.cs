@@ -8,6 +8,7 @@ namespace BookMachine.Persistence
     {
         public DbSet<BookEntity> BookEntities { get; set; }
         public DbSet<AuthorEntity> AuthorEntities { get; set; }
+        public DbSet<UserEntity> UserEntities { get; set; }
 
         public BookMachineDbContext(DbContextOptions<BookMachineDbContext> options) : base(options)
         {
@@ -18,6 +19,7 @@ namespace BookMachine.Persistence
         {
             modelBuilder.ApplyConfiguration(new BookConfiguration());
             modelBuilder.ApplyConfiguration(new AuthorConfiguration());
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
 
             base.OnModelCreating(modelBuilder);
         }

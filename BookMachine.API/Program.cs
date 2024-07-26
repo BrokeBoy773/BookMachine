@@ -1,9 +1,4 @@
-using BookMachine.Application.Services;
-using BookMachine.Core.Interfaces.Application.Services;
-using BookMachine.Core.Interfaces.Persistence.Repositories;
-using BookMachine.Persistence;
-using BookMachine.Persistence.Repositories;
-using Microsoft.EntityFrameworkCore;
+using BookMachine.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,23 +7,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddTransient<IBookRepository, BookRepository>();
-builder.Services.AddTransient<IBookService, BookService>();
+AuthorServiceExtensions.AddAuthorServiceExtensions(builder.Services);
+BookServiceExtensions.AddBookServiceExtensions(builder.Services);
+UserServiceExtensions.AddUserServiceExtensions(builder.Services);
 
-builder.Services.AddTransient<IAuthorRepository, AuthorRepository>();
-builder.Services.AddTransient<IAuthorService, AuthorService>();
+DatabaseServiceExtensions.AddDatabaseServiceExtensions(builder.Services, builder.Configuration);
 
-builder.Services.AddControllersWithViews()
-    .AddNewtonsoftJson(options =>
-    {
-        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-    });
-
-builder.Services.AddDbContext<BookMachineDbContext>(
-    options =>
-    {
-        options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(BookMachineDbContext)));
-    });
+AuthenticationServiceExtensions.AddAuthenticationServiceExtensions(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 
@@ -40,6 +25,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCookiePolicy();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
